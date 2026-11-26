@@ -1,7 +1,7 @@
 # LegalNepal backend
 
-Initial Django REST Framework project setup. SQLite is used by default; set
-`DATABASE_URL` to a PostgreSQL URL to opt into PostgreSQL.
+LegalNepal REST API built with Django REST Framework. SQLite is used by
+default; set `DATABASE_URL` to a PostgreSQL URL to opt into PostgreSQL.
 
 ## Local setup (PowerShell)
 
@@ -11,18 +11,34 @@ Use the existing workspace virtual environment from the `backend` directory:
 ..\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 Copy-Item .env.example .env
+python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
 
-Run `python manage.py migrate` after Phase 2 creates the custom user model and
-its initial migration. Django must use that model from the first database
-migration.
+The custom account model is configured from the first migration. Create an
+administrator with `python manage.py createsuperuser` to manage legal content
+and verify lawyer profiles in Django admin at `/admin/`.
 
 Edit `.env` before sharing or deploying. `0.0.0.0` binds the development
 server to network interfaces; use it only on a trusted development network.
 Production requires HTTPS, a strong secret, `DEBUG=False`, and explicit hosts.
 
 API schema: `/api/schema/`; interactive Swagger UI: `/api/docs/`.
+
+## API
+
+- `POST /api/accounts/register/`, `GET/PATCH /api/accounts/me/`
+- `POST /api/auth/token/`, `POST /api/auth/token/refresh/` (JWT)
+- `GET/POST /api/lawyers/`, `GET/PATCH /api/lawyers/{id}/`
+- `GET /api/legal/categories/`, `GET /api/legal/articles/`,
+  `GET /api/legal/articles/{slug}/`; staff manage categories and articles
+- `GET/POST /api/consultations/`, `GET/PATCH /api/consultations/{id}/`
+- `GET/POST /api/favourites/lawyers/`, `DELETE /api/favourites/lawyers/{id}/`
+- `GET/POST /api/favourites/articles/`, `DELETE /api/favourites/articles/{id}/`
+
+Send authenticated requests with `Authorization: Bearer <access-token>`. Lawyer
+search accepts optional `city` and `specialization` query parameters. Article
+search accepts an optional category slug in `category`.
 
 ## Database
 

@@ -1,0 +1,24 @@
+name: legal_nepal_frontend
+description: A Flutter frontend for LegalNepal mobile app.
+publish_to: 'none' # private package
+version: 0.1.0+1
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.19.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  # Add additional packages as needed (e.g., provider, go_router)
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/

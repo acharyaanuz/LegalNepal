@@ -1,12 +1,18 @@
 """Base settings for local LegalNepal backend development."""
 from pathlib import Path
+from datetime import timedelta
+from django.core.exceptions import ImproperlyConfigured
 
 from decouple import Csv, config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = config("DJANGO_SECRET_KEY", default="unsafe-development-key-change-me")
-DEBUG = config("DJANGO_DEBUG", default=True, cast=bool)
+SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
+DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
+if not SECRET_KEY or SECRET_KEY.startswith("replace-with-"):
+    raise ImproperlyConfigured("Set DJANGO_SECRET_KEY to a private random value.")
 ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
+if not DEBUG and ALLOWED_HOSTS == ["localhost", "127.0.0.1"]:
+    raise ImproperlyConfigured("Set DJANGO_ALLOWED_HOSTS for the production host.")
 
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
@@ -92,3 +98,16 @@ SPECTACULAR_SETTINGS = {
 }
 # Keep browser origins explicit. Native Flutter clients do not use browser CORS.
 CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS", default="", cast=Csv())
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+SECURE_SSL_REDIRECT = config("DJANGO_SECURE_SSL_REDIRECT", default=not DEBUG, cast=bool)
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_HSTS_SECONDS = 31_536_000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+}

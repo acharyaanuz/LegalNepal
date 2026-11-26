@@ -34,6 +34,7 @@ class ConsultationDetailView(generics.RetrieveUpdateAPIView):
                 serializer.fields["lawyer_notes"].read_only = False
             else:
                 serializer.fields["scheduled_at"].read_only = False
+                serializer.fields["status"].read_only = False
         return serializer
 
     def perform_update(self, serializer):
@@ -41,6 +42,10 @@ class ConsultationDetailView(generics.RetrieveUpdateAPIView):
         if obj.lawyer_id == self.request.user.id:
             if serializer.validated_data.get("status") not in {"accepted", "rejected", "completed"}:
                 raise serializers.ValidationError({"status": "Lawyers may accept, reject, or complete a request."})
-        elif any(key in serializer.validated_data for key in ("status", "lawyer_notes")):
-            raise PermissionDenied("Clients cannot change consultation status or lawyer notes.")
+        else:
+            requested_status = serializer.validated_data.get("status")
+            if "lawyer_notes" in serializer.validated_data:
+                raise PermissionDenied("Clients cannot change lawyer notes.")
+            if requested_status is not None and (requested_status != "cancelled" or obj.status != "requested"):
+                raise PermissionDenied("Clients may cancel only requests that are still requested.")
         serializer.save()

@@ -15,9 +15,10 @@ python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
 
-The custom account model is configured from the first migration. Create an
-administrator with `python manage.py createsuperuser` to manage legal content
-and verify lawyer profiles in Django admin at `/admin/`.
+The custom account model is configured from the first migration. The migrations
+add the starter legal categories. Create an administrator with
+`python manage.py createsuperuser` to publish reviewed legal articles and verify
+lawyer profiles in Django admin at `/admin/`.
 
 Edit `.env` before sharing or deploying. `0.0.0.0` binds the development
 server to network interfaces; use it only on a trusted development network.
@@ -29,7 +30,8 @@ API schema: `/api/schema/`; interactive Swagger UI: `/api/docs/`.
 
 - `POST /api/accounts/register/`, `GET/PATCH /api/accounts/me/`
 - `POST /api/auth/token/`, `POST /api/auth/token/refresh/` (JWT)
-- `GET/POST /api/lawyers/`, `GET/PATCH /api/lawyers/{id}/`
+- `GET/POST /api/lawyers/`, `GET/PATCH /api/lawyers/{id}/`,
+  `GET/POST/PATCH /api/lawyers/me/`
 - `GET /api/legal/categories/`, `GET /api/legal/articles/`,
   `GET /api/legal/articles/{slug}/`; staff manage categories and articles
 - `GET/POST /api/consultations/`, `GET/PATCH /api/consultations/{id}/`
@@ -58,8 +60,22 @@ Add the backend computer's private IPv4 address to `DJANGO_ALLOWED_HOSTS` in
 Android may need development-only cleartext HTTP configuration; production
 must use HTTPS.
 
-The inspected Flutter project is the separate `login_app` project. Its current
-screens provide local username/password registration and login plus a home
-profile view, backed by `SharedPreferences`; it has no LegalNepal lawyer,
-article, consultation, or favourites screens yet. Frontend edits are deferred
-to the integration phase.
+The Flutter app stores its JWT locally and uses it for authenticated API calls.
+By default it targets `http://10.0.2.2:8000/api` on Android emulators,
+`http://127.0.0.1:8000/api` on Windows and web, and
+`http://127.0.0.1:8000/api` on iOS simulators. Override the API root at build
+time with `--dart-define=API_BASE_URL=http://192.168.1.20:8000/api` when using
+a physical phone; replace the address with the backend computer's private IP.
+
+Use `DEBUG=True` only for local development. For deployment set a private,
+random `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`, and the exact production
+domains in `DJANGO_ALLOWED_HOSTS`; configure HTTPS and a production database.
+Production settings enable HTTPS redirects, secure cookies, and HSTS. Legal
+articles are intentionally not seeded; an administrator should review their
+accuracy and sources before publishing them.
+
+Start Django with `python manage.py runserver 0.0.0.0:8000`, then launch Flutter
+from the workspace root. For an Android emulator, run
+`flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000/api`. The Android
+development manifest allows cleartext HTTP for local testing; use HTTPS for a
+production backend.

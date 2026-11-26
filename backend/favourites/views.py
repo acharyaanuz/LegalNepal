@@ -10,7 +10,11 @@ class OwnedFavouriteMixin:
         return self.model.objects.filter(user=self.request.user).select_related(*self.related)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        instance, _ = self.model.objects.get_or_create(
+            user=self.request.user,
+            **serializer.validated_data,
+        )
+        serializer.instance = instance
 
 
 class FavouriteLawyerListCreateView(OwnedFavouriteMixin, generics.ListCreateAPIView):
